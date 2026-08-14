@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm config *)",
+      "Bash(npx expo-doctor *)",
+      "Bash(cd \"/Users/simonhaluska/Desktop/sport app/firtsappforsport\" && npx expo export --platform ios 2>&1 | tail -20 && rm -rf dist .expo)"
+    ],
+    "additionalDirectories": [
+      "/Users/simonhaluska/Desktop/sport app/firtsappforsport"
+    ]
+  },
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  }
+}

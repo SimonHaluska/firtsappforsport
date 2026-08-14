@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens as CSS variables — :root is the light (default) theme,
+   .dark overrides for the dark theme. Toggled by ThemeProvider based on
+   the device's system appearance. Keep in sync with src/theme/tokens.js. */
+:root {
+  --color-background: #FFFFFF;
+  --color-background-surface: #F5F6FA;
+  --color-background-elevated: #ECEDF5;
+  --color-text-primary: #14161F;
+  --color-text-secondary: #5B5F72;
+  --color-text-muted: #8B8FA3;
+  --color-text-inverse: #F5F6FA;
+  --color-border: #DEE1EC;
+  --color-border-subtle: #E7E9F2;
+}
+
+.dark {
+  --color-background: #0A0B10;
+  --color-background-surface: #14161F;
+  --color-background-elevated: #1C1F2B;
+  --color-text-primary: #F5F6FA;
+  --color-text-secondary: #A0A4B8;
+  --color-text-muted: #6B6F80;
+  --color-text-inverse: #F5F6FA;
+  --color-border: #262A38;
+  --color-border-subtle: #1C1F2B;
+}
