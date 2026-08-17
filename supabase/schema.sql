@@ -57,21 +57,41 @@ create table if not exists public.schedule (
 
 create index if not exists schedule_user_date_idx on public.schedule (user_id, date);
 
--- ── workouts ─────────────────────────────────────────────────────────────
--- Performance log: completed training sessions and matches.
-create table if not exists public.workouts (
+-- ── trainings ────────────────────────────────────────────────────────────
+-- Performance log: completed training sessions. A frequent, subjective
+-- process record — effort, mood, optional per-sport metrics.
+create table if not exists public.trainings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users (id) on delete cascade,
   date date not null,
-  type text not null check (type in ('training', 'match')),
   duration_minutes integer not null check (duration_minutes > 0),
   intensity smallint not null check (intensity between 1 and 5),
+  mood smallint not null check (mood between 1 and 5),
   notes text,
   metrics jsonb,
   created_at timestamptz not null default now()
 );
 
-create index if not exists workouts_user_date_idx on public.workouts (user_id, date);
+create index if not exists trainings_user_date_idx on public.trainings (user_id, date);
+
+-- ── matches ──────────────────────────────────────────────────────────────
+-- Performance log: completed matches. A rare, objective result record —
+-- opponent, result, optional per-sport metrics.
+create table if not exists public.matches (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users (id) on delete cascade,
+  date date not null,
+  opponent text,
+  competition text,
+  result text check (result in ('win', 'loss', 'draw')),
+  is_home boolean,
+  minutes_played integer check (minutes_played >= 0),
+  notes text,
+  metrics jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists matches_user_date_idx on public.matches (user_id, date);
 
 -- ── chat_messages ────────────────────────────────────────────────────────
 -- Transcript with the player's AI mentor. Append-only from the client;
@@ -92,7 +112,8 @@ create index if not exists chat_messages_user_created_idx
 -- players' data.
 alter table public.users enable row level security;
 alter table public.schedule enable row level security;
-alter table public.workouts enable row level security;
+alter table public.trainings enable row level security;
+alter table public.matches enable row level security;
 alter table public.chat_messages enable row level security;
 
 create policy "users can view own row" on public.users
@@ -111,13 +132,22 @@ create policy "users can update own schedule" on public.schedule
 create policy "users can delete own schedule" on public.schedule
   for delete using (auth.uid() = user_id);
 
-create policy "users can view own workouts" on public.workouts
+create policy "users can view own trainings" on public.trainings
   for select using (auth.uid() = user_id);
-create policy "users can insert own workouts" on public.workouts
+create policy "users can insert own trainings" on public.trainings
   for insert with check (auth.uid() = user_id);
-create policy "users can update own workouts" on public.workouts
+create policy "users can update own trainings" on public.trainings
   for update using (auth.uid() = user_id);
-create policy "users can delete own workouts" on public.workouts
+create policy "users can delete own trainings" on public.trainings
+  for delete using (auth.uid() = user_id);
+
+create policy "users can view own matches" on public.matches
+  for select using (auth.uid() = user_id);
+create policy "users can insert own matches" on public.matches
+  for insert with check (auth.uid() = user_id);
+create policy "users can update own matches" on public.matches
+  for update using (auth.uid() = user_id);
+create policy "users can delete own matches" on public.matches
   for delete using (auth.uid() = user_id);
 
 -- Chat is append-only from the client: read your own messages, insert your

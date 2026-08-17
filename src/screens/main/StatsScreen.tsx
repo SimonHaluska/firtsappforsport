@@ -4,7 +4,8 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { updateWeeklyTarget } from '../../api/profile';
 import { Screen } from '../../components/Screen';
-import { useLogData } from '../../hooks/useLogData';
+import { useMatchData } from '../../hooks/useMatchData';
+import { useTrainingData } from '../../hooks/useTrainingData';
 import { useUserId } from '../../hooks/useUserId';
 import { fromISODate } from '../../lib/date';
 import { buildConsistencySeries, calculateStreak, calculateWeeklyProgress } from '../../lib/stats';
@@ -19,7 +20,8 @@ const MAX_WEEKLY_TARGET = 21;
 export default function StatsScreen() {
   const { colors } = useTheme();
   const userId = useUserId();
-  const { entries, isLoading } = useLogData();
+  const { entries: trainings, isLoading: isLoadingTrainings } = useTrainingData();
+  const { entries: matches, isLoading: isLoadingMatches } = useMatchData();
   const profile = useProfileStore((s) => s.profile);
   const setProfile = useProfileStore((s) => s.setProfile);
   const rangeDays = useStatsStore((s) => s.rangeDays);
@@ -27,6 +29,8 @@ export default function StatsScreen() {
 
   const [isSavingTarget, setIsSavingTarget] = useState(false);
 
+  const isLoading = isLoadingTrainings || isLoadingMatches;
+  const entries = useMemo(() => [...trainings, ...matches], [trainings, matches]);
   const streak = useMemo(() => calculateStreak(entries), [entries]);
   const series = useMemo(() => buildConsistencySeries(entries, rangeDays), [entries, rangeDays]);
   const weeklyProgress = useMemo(

@@ -1,12 +1,19 @@
 import { addDays, toISODate, todayISODate } from './date';
-import type { ConsistencyPoint, PerformanceLogEntry, StatsRangeDays, WeeklyProgress } from '../types/models';
+import type { ConsistencyPoint, StatsRangeDays, WeeklyProgress } from '../types/models';
+
+interface DatedEntry {
+  date: string;
+}
 
 /**
  * Consecutive days with >=1 logged entry, counted backward from today.
  * Today is skipped if it has no entry yet (mid-day grace) rather than
  * breaking the streak — the streak only breaks once a full day is missed.
+ *
+ * Entries only need a `date` — callers merge trainings + matches into one
+ * array before calling, since both count toward the same streak.
  */
-export function calculateStreak(entries: PerformanceLogEntry[], todayIso: string = todayISODate()): number {
+export function calculateStreak(entries: DatedEntry[], todayIso: string = todayISODate()): number {
   const dates = new Set(entries.map((e) => e.date));
   if (dates.size === 0) return 0;
 
@@ -29,7 +36,7 @@ export function calculateStreak(entries: PerformanceLogEntry[], todayIso: string
  * of today), oldest first — ready for direct chart consumption.
  */
 export function buildConsistencySeries(
-  entries: PerformanceLogEntry[],
+  entries: DatedEntry[],
   rangeDays: StatsRangeDays,
   todayIso: string = todayISODate()
 ): ConsistencyPoint[] {
@@ -58,7 +65,7 @@ export function startOfWeek(date: Date): Date {
 }
 
 export function calculateWeeklyProgress(
-  entries: PerformanceLogEntry[],
+  entries: DatedEntry[],
   targetSessions: number,
   todayIso: string = todayISODate()
 ): WeeklyProgress {

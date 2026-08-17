@@ -29,17 +29,31 @@ export interface ScheduleEntry {
   notes?: string;
 }
 
-export type LogEntryType = 'training' | 'match';
-
-export interface PerformanceLogEntry {
+export interface TrainingEntry {
   id: string;
   date: string; // ISO date, YYYY-MM-DD
-  type: LogEntryType;
+  type: 'training';
   durationMinutes: number;
   intensity: 1 | 2 | 3 | 4 | 5;
+  mood: 1 | 2 | 3 | 4 | 5;
   notes?: string;
   metrics?: Record<string, number>;
 }
+
+export interface MatchEntry {
+  id: string;
+  date: string; // ISO date, YYYY-MM-DD
+  type: 'match';
+  opponent?: string;
+  competition?: string;
+  result?: 'win' | 'loss' | 'draw';
+  isHome?: boolean;
+  minutesPlayed?: number;
+  notes?: string;
+  metrics?: Record<string, number>;
+}
+
+export type ActivityEntry = TrainingEntry | MatchEntry;
 
 export type StatsRangeDays = 7 | 30;
 

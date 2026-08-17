@@ -73,14 +73,14 @@ export interface Database {
           },
         ];
       };
-      workouts: {
+      trainings: {
         Row: {
           id: string;
           user_id: string;
           date: string;
-          type: 'training' | 'match';
           duration_minutes: number;
           intensity: 1 | 2 | 3 | 4 | 5;
+          mood: 1 | 2 | 3 | 4 | 5;
           notes: string | null;
           metrics: Record<string, number> | null;
           created_at: string;
@@ -89,17 +89,54 @@ export interface Database {
           id?: string;
           user_id: string;
           date: string;
-          type: 'training' | 'match';
           duration_minutes: number;
           intensity: 1 | 2 | 3 | 4 | 5;
+          mood: 1 | 2 | 3 | 4 | 5;
           notes?: string | null;
           metrics?: Record<string, number> | null;
           created_at?: string;
         };
-        Update: Partial<Database['public']['Tables']['workouts']['Insert']>;
+        Update: Partial<Database['public']['Tables']['trainings']['Insert']>;
         Relationships: [
           {
-            foreignKeyName: 'workouts_user_id_fkey';
+            foreignKeyName: 'trainings_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      matches: {
+        Row: {
+          id: string;
+          user_id: string;
+          date: string;
+          opponent: string | null;
+          competition: string | null;
+          result: 'win' | 'loss' | 'draw' | null;
+          is_home: boolean | null;
+          minutes_played: number | null;
+          notes: string | null;
+          metrics: Record<string, number> | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          date: string;
+          opponent?: string | null;
+          competition?: string | null;
+          result?: 'win' | 'loss' | 'draw' | null;
+          is_home?: boolean | null;
+          minutes_played?: number | null;
+          notes?: string | null;
+          metrics?: Record<string, number> | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['matches']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: 'matches_user_id_fkey';
             columns: ['user_id'];
             referencedRelation: 'users';
             referencedColumns: ['id'];

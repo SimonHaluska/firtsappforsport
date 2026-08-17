@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import { Screen } from '../../components/Screen';
-import { useLogData } from '../../hooks/useLogData';
+import { useMatchData } from '../../hooks/useMatchData';
 import { useScheduleData } from '../../hooks/useScheduleData';
+import { useTrainingData } from '../../hooks/useTrainingData';
 import { formatRelativeDate, isWithinLastDays, todayISODate } from '../../lib/date';
 import { SCHEDULE_TYPE_COLOR, SCHEDULE_TYPE_LABEL } from '../../lib/scheduleTypes';
 import { useProfileStore } from '../../store';
@@ -9,11 +11,17 @@ import { useProfileStore } from '../../store';
 export default function HomeScreen() {
   const profile = useProfileStore((s) => s.profile);
   const { entries: scheduleEntries } = useScheduleData();
-  const { entries: logEntries } = useLogData();
+  const { entries: trainings } = useTrainingData();
+  const { entries: matches } = useMatchData();
+
+  const activityEntries = useMemo(
+    () => [...trainings, ...matches].sort((a, b) => (a.date < b.date ? 1 : -1)),
+    [trainings, matches]
+  );
 
   const todayEntry = scheduleEntries.find((e) => e.date === todayISODate());
-  const lastEntry = logEntries[0];
-  const sessionsThisWeek = logEntries.filter((e) => isWithinLastDays(e.date, 7)).length;
+  const lastEntry = activityEntries[0];
+  const sessionsThisWeek = activityEntries.filter((e) => isWithinLastDays(e.date, 7)).length;
 
   return (
     <Screen className="pt-lg">
@@ -48,7 +56,11 @@ export default function HomeScreen() {
               {lastEntry.type === 'match' ? 'Match' : 'Training'} · {formatRelativeDate(lastEntry.date)}
             </Text>
             <Text className="mt-xs text-sm text-text-secondary">
-              {lastEntry.durationMinutes} min · Felt {lastEntry.intensity}/5
+              {lastEntry.type === 'training'
+                ? `${lastEntry.durationMinutes} min · Felt ${lastEntry.intensity}/5`
+                : [lastEntry.opponent ? `vs ${lastEntry.opponent}` : null, lastEntry.result?.toUpperCase()]
+                    .filter(Boolean)
+                    .join(' · ') || 'No details logged'}
             </Text>
             <Text className="mt-sm text-sm text-text-secondary">
               {sessionsThisWeek} session{sessionsThisWeek === 1 ? '' : 's'} logged this week
