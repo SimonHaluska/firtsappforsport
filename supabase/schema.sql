@@ -22,6 +22,8 @@ create table if not exists public.users (
   ),
   mentor_name text not null,
   onboarding_complete boolean not null default false,
+  weekly_target_sessions smallint not null default 4
+    check (weekly_target_sessions between 1 and 21),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -13,6 +13,7 @@ function mapRow(row: UserRow): PlayerProfile {
     goal: row.goal,
     mentorName: row.mentor_name,
     onboardingComplete: row.onboarding_complete,
+    weeklyTargetSessions: row.weekly_target_sessions,
   };
 }
 
@@ -41,6 +42,20 @@ export async function upsertProfile(params: {
       mentor_name: params.mentorName,
       onboarding_complete: true,
     })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapRow(data);
+}
+
+export async function updateWeeklyTarget(params: {
+  userId: string;
+  weeklyTargetSessions: number;
+}): Promise<PlayerProfile> {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ weekly_target_sessions: params.weeklyTargetSessions })
+    .eq('id', params.userId)
     .select()
     .single();
   if (error) throw error;

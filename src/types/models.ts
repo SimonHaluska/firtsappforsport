@@ -16,6 +16,7 @@ export interface PlayerProfile {
   goal: Goal;
   mentorName: string;
   onboardingComplete: boolean;
+  weeklyTargetSessions: number;
 }
 
 export type ScheduleEntryType = 'training' | 'match' | 'recovery' | 'rest';
@@ -38,6 +39,19 @@ export interface PerformanceLogEntry {
   intensity: 1 | 2 | 3 | 4 | 5;
   notes?: string;
   metrics?: Record<string, number>;
+}
+
+export type StatsRangeDays = 7 | 30;
+
+export interface ConsistencyPoint {
+  date: string; // ISO date, YYYY-MM-DD
+  sessionCount: number;
+}
+
+export interface WeeklyProgress {
+  current: number;
+  target: number;
+  percent: number; // 0-1, clamped
 }
 
 export type ChatRole = 'user' | 'mentor';

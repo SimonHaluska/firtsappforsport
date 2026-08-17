@@ -19,6 +19,7 @@ export interface Database {
             | 'recover_from_injury';
           mentor_name: string;
           onboarding_complete: boolean;
+          weekly_target_sessions: number;
           created_at: string;
           updated_at: string;
         };
@@ -36,6 +37,7 @@ export interface Database {
             | 'recover_from_injury';
           mentor_name: string;
           onboarding_complete?: boolean;
+          weekly_target_sessions?: number;
           created_at?: string;
           updated_at?: string;
         };

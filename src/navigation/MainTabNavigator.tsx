@@ -4,6 +4,7 @@ import ChatScreen from '../screens/main/ChatScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import LogScreen from '../screens/main/LogScreen';
 import ScheduleScreen from '../screens/main/ScheduleScreen';
+import StatsScreen from '../screens/main/StatsScreen';
 import { useTheme } from '../theme';
 import type { MainTabParamList } from './types';
 
@@ -11,6 +12,7 @@ const TAB_ICONS: Record<keyof MainTabParamList, { filled: keyof typeof Ionicons.
   Home: { filled: 'home', outline: 'home-outline' },
   Log: { filled: 'clipboard', outline: 'clipboard-outline' },
   Schedule: { filled: 'calendar', outline: 'calendar-outline' },
+  Stats: { filled: 'stats-chart', outline: 'stats-chart-outline' },
   Chat: { filled: 'chatbubble-ellipses', outline: 'chatbubble-ellipses-outline' },
 };
 
@@ -39,6 +41,7 @@ export function MainTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Log" component={LogScreen} />
       <Tab.Screen name="Schedule" component={ScheduleScreen} />
+      <Tab.Screen name="Stats" component={StatsScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
     </Tab.Navigator>
   );
