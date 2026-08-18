@@ -10,6 +10,9 @@ import { Button } from './Button';
 import { GoalProximitySelector } from './GoalProximitySelector';
 import { TextField } from './TextField';
 
+const SECTION_LABEL_CLASSNAME = 'text-xs font-semibold tracking-wide text-text-muted';
+const CARD_CLASSNAME = 'mt-xl rounded-lg border border-border bg-background-elevated px-md py-md';
+
 interface MatchFormProps {
   userId: string;
   sport: Sport;
@@ -83,115 +86,137 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
 
   return (
     <View className="mt-lg rounded-lg border border-border bg-background-surface px-md py-md">
-      <Text className="text-sm font-semibold text-text-secondary">DATE</Text>
+      <Text className={SECTION_LABEL_CLASSNAME}>DATE</Text>
       <View className="mt-xs flex-row items-center gap-sm">
         <Pressable
           onPress={() => setDate((d) => addDays(d, -1))}
-          className="h-11 w-11 items-center justify-center rounded-md border border-border bg-background-elevated active:opacity-70"
+          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 3,
+            elevation: 1,
+          }}
         >
           <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
         </Pressable>
-        <Text className="flex-1 text-center text-base font-bold text-text-primary">
+        <Text className="flex-1 text-center text-lg font-bold text-text-primary">
           {formatRelativeDate(toISODate(date))}
         </Text>
         <Pressable
           onPress={() => setDate((d) => addDays(d, 1))}
-          className="h-11 w-11 items-center justify-center rounded-md border border-border bg-background-elevated active:opacity-70"
+          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 3,
+            elevation: 1,
+          }}
         >
           <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
         </Pressable>
       </View>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">OPPONENT</Text>
-      <TextField className="mt-xs" value={opponent} onChangeText={setOpponent} placeholder="Opponent name" />
+      <View className={CARD_CLASSNAME}>
+        <Text className={SECTION_LABEL_CLASSNAME}>MATCH INFO</Text>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">RESULT</Text>
-      <TextField className="mt-xs" value={result} onChangeText={setResult} placeholder="2:1" />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>OPPONENT</Text>
+        <TextField className="mt-xs" value={opponent} onChangeText={setOpponent} placeholder="Opponent name" />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">
-        {sport === 'football' ? 'MINUTES PLAYED' : 'ICE TIME (MINUTES)'}
-      </Text>
-      <TextField
-        className="mt-xs"
-        value={playingTime}
-        onChangeText={(text) => setPlayingTime(text.replace(/[^0-9]/g, ''))}
-        placeholder={sport === 'football' ? '90' : '18'}
-        keyboardType="number-pad"
-      />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>RESULT</Text>
+        <TextField className="mt-xs" value={result} onChangeText={setResult} placeholder="2:1" />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">GOALS</Text>
-      <TextField
-        className="mt-xs"
-        value={goals}
-        onChangeText={(text) => setGoals(text.replace(/[^0-9]/g, ''))}
-        placeholder="0"
-        keyboardType="number-pad"
-      />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>
+          {sport === 'football' ? 'MINUTES PLAYED' : 'ICE TIME (MINUTES)'}
+        </Text>
+        <TextField
+          className="mt-xs"
+          value={playingTime}
+          onChangeText={(text) => setPlayingTime(text.replace(/[^0-9]/g, ''))}
+          placeholder={sport === 'football' ? '90' : '18'}
+          keyboardType="number-pad"
+        />
+      </View>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">ASSISTS</Text>
-      <TextField
-        className="mt-xs"
-        value={assists}
-        onChangeText={(text) => setAssists(text.replace(/[^0-9]/g, ''))}
-        placeholder="0"
-        keyboardType="number-pad"
-      />
+      <View className={CARD_CLASSNAME}>
+        <Text className={SECTION_LABEL_CLASSNAME}>PERFORMANCE</Text>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">SHOTS</Text>
-      <TextField
-        className="mt-xs"
-        value={shots}
-        onChangeText={(text) => setShots(text.replace(/[^0-9]/g, ''))}
-        placeholder="0"
-        keyboardType="number-pad"
-      />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>GOALS</Text>
+        <TextField
+          className="mt-xs"
+          value={goals}
+          onChangeText={(text) => setGoals(text.replace(/[^0-9]/g, ''))}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">POSITION</Text>
-      <TextField className="mt-xs" value={position} onChangeText={setPosition} placeholder="e.g. Midfielder" />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>ASSISTS</Text>
+        <TextField
+          className="mt-xs"
+          value={assists}
+          onChangeText={(text) => setAssists(text.replace(/[^0-9]/g, ''))}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
 
-      {sport === 'football' ? (
-        <>
-          <Text className="mt-md text-sm font-semibold text-text-secondary">YELLOW CARDS</Text>
-          <TextField
-            className="mt-xs"
-            value={yellowCards}
-            onChangeText={(text) => setYellowCards(text.replace(/[^0-9]/g, ''))}
-            placeholder="0"
-            keyboardType="number-pad"
-          />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>SHOTS</Text>
+        <TextField
+          className="mt-xs"
+          value={shots}
+          onChangeText={(text) => setShots(text.replace(/[^0-9]/g, ''))}
+          placeholder="0"
+          keyboardType="number-pad"
+        />
 
-          <Text className="mt-md text-sm font-semibold text-text-secondary">RED CARDS</Text>
-          <TextField
-            className="mt-xs"
-            value={redCards}
-            onChangeText={(text) => setRedCards(text.replace(/[^0-9]/g, ''))}
-            placeholder="0"
-            keyboardType="number-pad"
-          />
-        </>
-      ) : (
-        <>
-          <Text className="mt-md text-sm font-semibold text-text-secondary">PENALTY MINUTES</Text>
-          <TextField
-            className="mt-xs"
-            value={penaltyMinutes}
-            onChangeText={(text) => setPenaltyMinutes(text.replace(/[^0-9]/g, ''))}
-            placeholder="0"
-            keyboardType="number-pad"
-          />
+        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>POSITION</Text>
+        <TextField className="mt-xs" value={position} onChangeText={setPosition} placeholder="e.g. Midfielder" />
 
-          <Text className="mt-md text-sm font-semibold text-text-secondary">PLUS / MINUS</Text>
-          <TextField
-            className="mt-xs"
-            value={plusMinus}
-            onChangeText={(text) => setPlusMinus(text.replace(/[^-0-9]/g, ''))}
-            placeholder="0"
-            keyboardType="numbers-and-punctuation"
-          />
-        </>
-      )}
+        {sport === 'football' ? (
+          <>
+            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>YELLOW CARDS</Text>
+            <TextField
+              className="mt-xs"
+              value={yellowCards}
+              onChangeText={(text) => setYellowCards(text.replace(/[^0-9]/g, ''))}
+              placeholder="0"
+              keyboardType="number-pad"
+            />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">NOTES</Text>
+            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>RED CARDS</Text>
+            <TextField
+              className="mt-xs"
+              value={redCards}
+              onChangeText={(text) => setRedCards(text.replace(/[^0-9]/g, ''))}
+              placeholder="0"
+              keyboardType="number-pad"
+            />
+          </>
+        ) : (
+          <>
+            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>PENALTY MINUTES</Text>
+            <TextField
+              className="mt-xs"
+              value={penaltyMinutes}
+              onChangeText={(text) => setPenaltyMinutes(text.replace(/[^0-9]/g, ''))}
+              placeholder="0"
+              keyboardType="number-pad"
+            />
+
+            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>PLUS / MINUS</Text>
+            <TextField
+              className="mt-xs"
+              value={plusMinus}
+              onChangeText={(text) => setPlusMinus(text.replace(/[^-0-9]/g, ''))}
+              placeholder="0"
+              keyboardType="numbers-and-punctuation"
+            />
+          </>
+        )}
+      </View>
+
+      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>NOTES</Text>
       <TextField
         className="mt-xs"
         value={notes}
@@ -205,7 +230,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
       <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
 
       <Button
-        className="mt-md"
+        className="mt-xl"
         label="Save Match"
         onPress={handleSubmit}
         disabled={!canSubmit}

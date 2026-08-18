@@ -3,15 +3,22 @@
 // Re-exported with types for app code via theme/index.ts.
 
 // Accent colors are shared across light/dark — same design language, same brand.
+// "Ascent": deep indigo (trust/authority) + growth green (progress/momentum).
+// Deliberately no black-as-accent — dark UI leans on navy/indigo instead.
 const brand = {
-  primary: '#7C5CFC',
-  primaryDark: '#5B3DF0',
-  secondary: '#22D3EE',
-  accent: '#F5A623',
+  primary: '#4338CA',
+  primaryDark: '#312E81',
+  primaryLight: '#818CF8',
+  secondary: '#22C55E',
+  secondaryDark: '#15803D',
+  secondaryLight: '#86EFAC',
+  accent: '#F5A623', // reserved for milestones/alerts, not everyday UI
 };
 
 const status = {
-  success: '#34D399',
+  // Unified with brand.secondary — "success" and "progress" read as one
+  // color, not two competing greens.
+  success: brand.secondary,
   warning: '#FBBF24',
   danger: '#F87171',
   info: '#38BDF8',
@@ -24,6 +31,16 @@ const schedule = {
   rest: '#3A3F52',
 };
 
+// brand.primary/secondary as *fills* (button backgrounds, gradients, chip
+// selected state) stay fixed across modes — that's `brand` above. But used
+// bare as foreground (text/icon/border directly on a background, no fill
+// behind them), the same hex reads very differently per mode: raw indigo
+// nearly disappears into a near-black dark background, while raw green is
+// too light to read on a white one. `primaryText`/`secondaryText` are the
+// AA-safe per-mode picks for that bare-foreground case — components that
+// render brand-colored text/icons/borders should read color from here
+// (via useTheme().colors.brand.primaryText/secondaryText), not from the
+// raw brand.primary/secondary.
 const light = {
   background: {
     DEFAULT: '#FFFFFF',
@@ -40,7 +57,11 @@ const light = {
     DEFAULT: '#DEE1EC',
     subtle: '#E7E9F2',
   },
-  brand,
+  brand: {
+    ...brand,
+    primaryText: brand.primary, // 7.3-7.9:1 on light backgrounds
+    secondaryText: '#166534', // deeper than secondaryDark — raw green/secondaryDark both under 4.5:1 on elevated
+  },
   status,
   schedule,
 };
@@ -61,20 +82,26 @@ const dark = {
     DEFAULT: '#262A38',
     subtle: '#1C1F2B',
   },
-  brand,
+  brand: {
+    ...brand,
+    primaryText: brand.primaryLight, // raw primary is only ~2.5:1 on dark backgrounds
+    secondaryText: brand.secondary, // raw green is already 7.2-8.6:1 on dark backgrounds
+  },
   status,
   schedule,
 };
 
 const gradients = {
   light: {
-    primary: ['#7C5CFC', '#22D3EE'],
+    // primary -> secondaryDark (not raw secondary): the raw indigo->green
+    // pairing drops white-text contrast to ~2:1 near the green end.
+    primary: ['#4338CA', '#15803D'],
     gold: ['#F5A623', '#FBBF24'],
     danger: ['#F87171', '#EF4444'],
     surface: ['#FFFFFF', '#F5F6FA'],
   },
   dark: {
-    primary: ['#7C5CFC', '#22D3EE'],
+    primary: ['#4338CA', '#15803D'],
     gold: ['#F5A623', '#FBBF24'],
     danger: ['#F87171', '#EF4444'],
     surface: ['#1C1F2B', '#0A0B10'],

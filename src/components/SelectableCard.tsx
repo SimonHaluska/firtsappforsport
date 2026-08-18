@@ -20,7 +20,10 @@ export function SelectableCard({ label, description, selected, onPress }: Select
       }`}
     >
       <View className="flex-1">
-        <Text className={`text-base font-bold ${selected ? 'text-brand-primary' : 'text-text-primary'}`}>
+        <Text
+          className={`text-base font-bold ${selected ? '' : 'text-text-secondary'}`}
+          style={selected ? { color: colors.brand.primaryText } : undefined}
+        >
           {label}
         </Text>
         {description ? <Text className="mt-xs text-sm text-text-secondary">{description}</Text> : null}
@@ -28,7 +31,7 @@ export function SelectableCard({ label, description, selected, onPress }: Select
       <Ionicons
         name={selected ? 'checkmark-circle' : 'ellipse-outline'}
         size={22}
-        color={selected ? colors.brand.primary : colors.text.muted}
+        color={selected ? colors.brand.primaryText : colors.text.muted}
       />
     </Pressable>
   );

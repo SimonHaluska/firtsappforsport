@@ -1,21 +1,25 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { MatchForm } from '../../components/MatchForm';
 import { Screen } from '../../components/Screen';
+import { SegmentedControl } from '../../components/SegmentedControl';
+import type { SegmentedControlOption } from '../../components/SegmentedControl';
 import { TrainingForm } from '../../components/TrainingForm';
 import { useMatchData } from '../../hooks/useMatchData';
 import { useTrainingData } from '../../hooks/useTrainingData';
 import { useUserId } from '../../hooks/useUserId';
 import { formatRelativeDate } from '../../lib/date';
 import { useMatchStore, useProfileStore, useTrainingStore } from '../../store';
-import { useTheme } from '../../theme';
 import type { ActivityEntry } from '../../types/models';
 
-type OpenForm = 'training' | 'match' | null;
+type OpenForm = 'training' | 'match';
+
+const LOG_FORM_OPTIONS: SegmentedControlOption<OpenForm>[] = [
+  { value: 'training', label: 'Log Training' },
+  { value: 'match', label: 'Log Match' },
+];
 
 export default function LogScreen() {
-  const { colors } = useTheme();
   const userId = useUserId();
   const sport = useProfileStore((s) => s.profile?.sport);
   const { entries: trainings, isLoading: isLoadingTrainings } = useTrainingData();
@@ -23,7 +27,7 @@ export default function LogScreen() {
   const upsertTrainingEntry = useTrainingStore((s) => s.upsertEntry);
   const upsertMatchEntry = useMatchStore((s) => s.upsertEntry);
 
-  const [openForm, setOpenForm] = useState<OpenForm>(null);
+  const [openForm, setOpenForm] = useState<OpenForm>('training');
 
   const isLoading = isLoadingTrainings || isLoadingMatches;
   const entries: ActivityEntry[] = useMemo(
@@ -33,28 +37,9 @@ export default function LogScreen() {
 
   return (
     <Screen className="pt-lg">
-      <Text className="text-3xl font-extrabold text-text-primary">Performance Log</Text>
+      <Text className="text-2xl font-extrabold text-text-primary">Performance Log</Text>
 
-      <View className="mt-md flex-row gap-sm">
-        <Pressable
-          onPress={() => setOpenForm((v) => (v === 'training' ? null : 'training'))}
-          className={`flex-1 flex-row items-center justify-center gap-xs rounded-md border py-sm ${
-            openForm === 'training' ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-          }`}
-        >
-          <Ionicons name={openForm === 'training' ? 'close' : 'add'} size={18} color={colors.brand.primary} />
-          <Text className="text-base font-bold text-brand-primary">Log Training</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setOpenForm((v) => (v === 'match' ? null : 'match'))}
-          className={`flex-1 flex-row items-center justify-center gap-xs rounded-md border py-sm ${
-            openForm === 'match' ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-          }`}
-        >
-          <Ionicons name={openForm === 'match' ? 'close' : 'add'} size={18} color={colors.brand.primary} />
-          <Text className="text-base font-bold text-brand-primary">Log Match</Text>
-        </Pressable>
-      </View>
+      <SegmentedControl className="mt-md" options={LOG_FORM_OPTIONS} value={openForm} onChange={setOpenForm} />
 
       <FlatList
         data={entries}
@@ -68,7 +53,6 @@ export default function LogScreen() {
                 sport={sport}
                 onSaved={(entry) => {
                   upsertTrainingEntry(entry);
-                  setOpenForm(null);
                 }}
               />
             )}
@@ -78,7 +62,6 @@ export default function LogScreen() {
                 sport={sport}
                 onSaved={(entry) => {
                   upsertMatchEntry(entry);
-                  setOpenForm(null);
                 }}
               />
             )}
@@ -88,7 +71,7 @@ export default function LogScreen() {
         ListEmptyComponent={
           !isLoading ? (
             <Text className="mt-xl text-center text-sm text-text-secondary">
-              No sessions logged yet. Tap Log Training or Log Match to add your first one.
+              No sessions logged yet. Fill in the form above to add your first one.
             </Text>
           ) : null
         }

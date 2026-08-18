@@ -11,6 +11,8 @@ import { GoalProximitySelector } from './GoalProximitySelector';
 import { NumericScaleField } from './NumericScaleField';
 import { TextField } from './TextField';
 
+const SECTION_LABEL_CLASSNAME = 'text-xs font-semibold tracking-wide text-text-muted';
+
 interface TrainingFormProps {
   userId: string;
   sport: Sport;
@@ -66,26 +68,40 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
 
   return (
     <View className="mt-lg rounded-lg border border-border bg-background-surface px-md py-md">
-      <Text className="text-sm font-semibold text-text-secondary">DATE</Text>
+      <Text className={SECTION_LABEL_CLASSNAME}>DATE</Text>
       <View className="mt-xs flex-row items-center gap-sm">
         <Pressable
           onPress={() => setDate((d) => addDays(d, -1))}
-          className="h-11 w-11 items-center justify-center rounded-md border border-border bg-background-elevated active:opacity-70"
+          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 3,
+            elevation: 1,
+          }}
         >
           <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
         </Pressable>
-        <Text className="flex-1 text-center text-base font-bold text-text-primary">
+        <Text className="flex-1 text-center text-lg font-bold text-text-primary">
           {formatRelativeDate(toISODate(date))}
         </Text>
         <Pressable
           onPress={() => setDate((d) => addDays(d, 1))}
-          className="h-11 w-11 items-center justify-center rounded-md border border-border bg-background-elevated active:opacity-70"
+          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 3,
+            elevation: 1,
+          }}
         >
           <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
         </Pressable>
       </View>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">TRAINING TYPE</Text>
+      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>TRAINING TYPE</Text>
       <View className="mt-xs flex-row flex-wrap gap-xs">
         {typeOptions.map((option) => {
           const selected = trainingType === option.value;
@@ -93,11 +109,18 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
             <Pressable
               key={option.value}
               onPress={() => setTrainingType(option.value)}
-              className={`rounded-md border px-sm py-sm ${
-                selected ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-              }`}
+              style={{
+                width: '48%',
+                borderWidth: 1,
+                borderColor: selected ? colors.brand.primary : colors.border.DEFAULT,
+                backgroundColor: selected ? 'rgba(129,140,248,0.16)' : colors.background.surface,
+              }}
+              className="items-center rounded-md px-sm py-sm"
             >
-              <Text className={`text-sm font-bold ${selected ? 'text-brand-primary' : 'text-text-primary'}`}>
+              <Text
+                className="text-sm font-bold"
+                style={{ color: selected ? colors.brand.primaryText : colors.text.secondary }}
+              >
                 {option.label}
               </Text>
             </Pressable>
@@ -105,7 +128,7 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
         })}
       </View>
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">DURATION (MINUTES)</Text>
+      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>DURATION (MINUTES)</Text>
       <TextField
         className="mt-xs"
         value={duration}
@@ -114,16 +137,11 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
         keyboardType="number-pad"
       />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">INTENSITY (1-10)</Text>
-      <NumericScaleField value={intensity} onChange={setIntensity} />
+      <NumericScaleField label="Intensity (1-10)" value={intensity} onChange={setIntensity} />
+      <NumericScaleField label="Energy before (optional)" value={energyBefore} onChange={setEnergyBefore} />
+      <NumericScaleField label="Energy after (optional)" value={energyAfter} onChange={setEnergyAfter} />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">ENERGY BEFORE (OPTIONAL)</Text>
-      <NumericScaleField value={energyBefore} onChange={setEnergyBefore} />
-
-      <Text className="mt-md text-sm font-semibold text-text-secondary">ENERGY AFTER (OPTIONAL)</Text>
-      <NumericScaleField value={energyAfter} onChange={setEnergyAfter} />
-
-      <Text className="mt-md text-sm font-semibold text-text-secondary">NOTES</Text>
+      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>NOTES</Text>
       <TextField
         className="mt-xs"
         value={notes}
@@ -136,7 +154,7 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
 
       <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
 
-      <Button className="mt-md" label="Save Training" onPress={handleSubmit} disabled={!canSubmit} isLoading={isSubmitting} />
+      <Button className="mt-xl" label="Save Training" onPress={handleSubmit} disabled={!canSubmit} isLoading={isSubmitting} />
     </View>
   );
 }

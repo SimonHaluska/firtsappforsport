@@ -19,10 +19,10 @@ export function GoalProximitySelector({ value, onChange }: GoalProximitySelector
 
   return (
     <View
-      className="mt-md rounded-lg border-2 px-md py-md"
-      style={{ borderColor: colors.brand.secondary, backgroundColor: colors.background.elevated }}
+      className="mt-xl rounded-lg border-2 px-md py-md"
+      style={{ borderColor: colors.brand.secondaryText, backgroundColor: colors.background.elevated }}
     >
-      <Text className="text-base font-extrabold" style={{ color: colors.brand.secondary }}>
+      <Text className="text-base font-extrabold" style={{ color: colors.brand.secondaryText }}>
         Ako blízko si dnes svojmu cieľu?
       </Text>
       <Text className="mt-xs text-sm text-text-secondary">Vyber jednu z možností.</Text>
@@ -36,8 +36,8 @@ export function GoalProximitySelector({ value, onChange }: GoalProximitySelector
               onPress={() => onChange(option)}
               className="h-14 flex-1 items-center justify-center rounded-md border-2"
               style={{
-                borderColor: selected ? colors.brand.secondary : colors.border.DEFAULT,
-                backgroundColor: selected ? colors.brand.secondary : colors.background.surface,
+                borderColor: selected ? colors.brand.secondaryDark : colors.border.DEFAULT,
+                backgroundColor: selected ? colors.brand.secondaryDark : colors.background.surface,
               }}
             >
               <Text

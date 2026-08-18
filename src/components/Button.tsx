@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRef } from 'react';
-import { ActivityIndicator, Animated, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text } from 'react-native';
 import type { GestureResponderEvent, PressableProps } from 'react-native';
 import { useTheme } from '../theme';
 
@@ -14,7 +15,7 @@ interface ButtonProps extends Omit<PressableProps, 'children'> {
 }
 
 const CONTAINER_CLASSNAME: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-primary',
+  primary: '',
   secondary: 'border border-border bg-background-elevated',
   tertiary: 'bg-transparent',
 };
@@ -22,7 +23,7 @@ const CONTAINER_CLASSNAME: Record<ButtonVariant, string> = {
 const LABEL_CLASSNAME: Record<ButtonVariant, string> = {
   primary: 'text-text-inverse',
   secondary: 'text-text-primary',
-  tertiary: 'text-brand-primary',
+  tertiary: '',
 };
 
 export function Button({
@@ -36,9 +37,10 @@ export function Button({
   onPressOut,
   ...pressableProps
 }: ButtonProps) {
-  const { colors } = useTheme();
+  const { colors, gradients } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
   const isDisabled = disabled || isLoading;
+  const isPrimary = variant === 'primary';
 
   const animateTo = (toValue: number) => {
     Animated.spring(scale, {
@@ -59,7 +61,7 @@ export function Button({
     onPressOut?.(e);
   };
 
-  const iconColor = variant === 'primary' ? colors.text.inverse : colors.brand.primary;
+  const iconColor = isPrimary ? colors.text.inverse : colors.brand.primaryText;
 
   return (
     <Animated.View style={{ transform: [{ scale }] }}>
@@ -67,11 +69,13 @@ export function Button({
         disabled={isDisabled}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className={`flex-row items-center justify-center gap-xs rounded-md py-md ${CONTAINER_CLASSNAME[variant]} ${
-          variant === 'tertiary' ? 'py-sm' : ''
-        } ${isDisabled ? 'opacity-40' : ''} ${className}`}
+        className={`flex-row items-center justify-center gap-xs overflow-hidden rounded-md py-md ${
+          CONTAINER_CLASSNAME[variant]
+        } ${isPrimary ? 'min-h-[52px]' : ''} ${variant === 'tertiary' ? 'py-sm' : ''} ${
+          isDisabled ? 'opacity-40' : ''
+        } ${className}`}
         style={
-          variant === 'primary' && !isDisabled
+          isPrimary && !isDisabled
             ? {
                 shadowColor: colors.brand.primary,
                 shadowOffset: { width: 0, height: 4 },
@@ -83,12 +87,25 @@ export function Button({
         }
         {...pressableProps}
       >
+        {isPrimary && (
+          <LinearGradient
+            colors={gradients.primary as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
         {isLoading ? (
           <ActivityIndicator color={iconColor} />
         ) : (
           <>
             {icon ? <Ionicons name={icon} size={18} color={iconColor} /> : null}
-            <Text className={`text-base font-bold ${LABEL_CLASSNAME[variant]}`}>{label}</Text>
+            <Text
+              className={`text-base font-bold ${LABEL_CLASSNAME[variant]}`}
+              style={variant === 'tertiary' ? { color: colors.brand.primaryText } : undefined}
+            >
+              {label}
+            </Text>
           </>
         )}
       </Pressable>
