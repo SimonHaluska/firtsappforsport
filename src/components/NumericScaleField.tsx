@@ -7,20 +7,22 @@ interface NumericScaleFieldProps {
   label: string;
   value: number | undefined;
   onChange: (value: number) => void;
+  className?: string;
 }
 
 /**
  * 1-10 chip scale, split into two rows of 5 so each chip stays tap-sized.
- * Framed as its own mini-card — the same "card in card" pattern as
- * GoalProximitySelector — so intensity/energy read as distinct key inputs
- * rather than blending into the rest of the form.
+ * No card chrome of its own — it's meant to live inside a FormSection
+ * alongside other related fields (e.g. intensity + energy before/after).
  */
-export function NumericScaleField({ label, value, onChange }: NumericScaleFieldProps) {
+export function NumericScaleField({ label, value, onChange, className = '' }: NumericScaleFieldProps) {
   const { colors } = useTheme();
 
   return (
-    <View className="mt-md rounded-lg border border-border bg-background-elevated px-md py-md">
-      <Text className="text-xs font-semibold tracking-wide text-text-muted">{label.toUpperCase()}</Text>
+    <View className={className}>
+      <Text className="text-xs font-bold text-text-muted" style={{ letterSpacing: 0.8 }}>
+        {label.toUpperCase()}
+      </Text>
       <View className="mt-sm gap-xs">
         {[SCALE.slice(0, 5), SCALE.slice(5, 10)].map((row, rowIndex) => (
           <View key={rowIndex} className="flex-row gap-xs">

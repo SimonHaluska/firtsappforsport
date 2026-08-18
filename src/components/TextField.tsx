@@ -31,10 +31,14 @@ export function TextField({ className = '', keyboardType, onFocus, onBlur, style
         inputAccessoryViewID={needsDoneBar ? accessoryId : undefined}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        className={`rounded-md border bg-background-elevated px-md py-md text-base font-medium text-text-primary ${
-          isFocused ? 'border-brand-primary' : 'border-border'
-        } ${className}`}
+        className={`rounded-md border px-md py-md text-base font-medium text-text-primary ${className}`}
         style={[
+          {
+            borderColor: isFocused ? colors.brand.primary : colors.border.DEFAULT,
+            // One tier brighter than FormSection's own background.elevated —
+            // otherwise the field is invisible against the card it sits in.
+            backgroundColor: colors.background.DEFAULT,
+          },
           isFocused
             ? {
                 shadowColor: colors.brand.primary,

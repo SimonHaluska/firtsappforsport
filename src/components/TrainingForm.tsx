@@ -7,11 +7,18 @@ import { TRAINING_TYPE_OPTIONS } from '../lib/trainingTypes';
 import { useTheme } from '../theme';
 import type { GoalProximity, Sport, TrainingEntry, TrainingTypeFootball, TrainingTypeHockey } from '../types/models';
 import { Button } from './Button';
+import { FormSection } from './FormSection';
 import { GoalProximitySelector } from './GoalProximitySelector';
 import { NumericScaleField } from './NumericScaleField';
 import { TextField } from './TextField';
 
-const SECTION_LABEL_CLASSNAME = 'text-xs font-semibold tracking-wide text-text-muted';
+function SectionLabel({ children, className = '' }: { children: string; className?: string }) {
+  return (
+    <Text className={`text-xs font-bold text-text-muted ${className}`} style={{ letterSpacing: 0.8 }}>
+      {children}
+    </Text>
+  );
+}
 
 interface TrainingFormProps {
   userId: string;
@@ -68,89 +75,105 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
 
   return (
     <View className="mt-lg rounded-lg border border-border bg-background-surface px-md py-md">
-      <Text className={SECTION_LABEL_CLASSNAME}>DATE</Text>
-      <View className="mt-xs flex-row items-center gap-sm">
-        <Pressable
-          onPress={() => setDate((d) => addDays(d, -1))}
-          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 3,
-            elevation: 1,
-          }}
-        >
-          <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
-        </Pressable>
-        <Text className="flex-1 text-center text-lg font-bold text-text-primary">
-          {formatRelativeDate(toISODate(date))}
-        </Text>
-        <Pressable
-          onPress={() => setDate((d) => addDays(d, 1))}
-          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 3,
-            elevation: 1,
-          }}
-        >
-          <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
-        </Pressable>
-      </View>
+      <FormSection>
+        <SectionLabel>DATE</SectionLabel>
+        <View className="mt-xs flex-row items-center gap-sm">
+          <Pressable
+            onPress={() => setDate((d) => addDays(d, -1))}
+            className="h-11 w-11 items-center justify-center rounded-md bg-background-surface active:opacity-70"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
+          </Pressable>
+          <Text className="flex-1 text-center text-lg font-bold text-text-primary">
+            {formatRelativeDate(toISODate(date))}
+          </Text>
+          <Pressable
+            onPress={() => setDate((d) => addDays(d, 1))}
+            className="h-11 w-11 items-center justify-center rounded-md bg-background-surface active:opacity-70"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
+          </Pressable>
+        </View>
 
-      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>TRAINING TYPE</Text>
-      <View className="mt-xs flex-row flex-wrap gap-xs">
-        {typeOptions.map((option) => {
-          const selected = trainingType === option.value;
-          return (
-            <Pressable
-              key={option.value}
-              onPress={() => setTrainingType(option.value)}
-              style={{
-                width: '48%',
-                borderWidth: 1,
-                borderColor: selected ? colors.brand.primary : colors.border.DEFAULT,
-                backgroundColor: selected ? 'rgba(129,140,248,0.16)' : colors.background.surface,
-              }}
-              className="items-center rounded-md px-sm py-sm"
-            >
-              <Text
-                className="text-sm font-bold"
-                style={{ color: selected ? colors.brand.primaryText : colors.text.secondary }}
+        <SectionLabel className="mt-sm">TRAINING TYPE</SectionLabel>
+        <View className="mt-xs flex-row flex-wrap gap-xs">
+          {typeOptions.map((option) => {
+            const selected = trainingType === option.value;
+            return (
+              <Pressable
+                key={option.value}
+                onPress={() => setTrainingType(option.value)}
+                style={{
+                  width: '48%',
+                  borderWidth: 1,
+                  borderColor: selected ? colors.brand.primary : colors.border.DEFAULT,
+                  backgroundColor: selected ? 'rgba(129,140,248,0.16)' : colors.background.surface,
+                }}
+                className="items-center rounded-md px-sm py-sm"
               >
-                {option.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+                <Text
+                  className="text-sm font-bold"
+                  style={{ color: selected ? colors.brand.primaryText : colors.text.secondary }}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>DURATION (MINUTES)</Text>
-      <TextField
-        className="mt-xs"
-        value={duration}
-        onChangeText={(text) => setDuration(text.replace(/[^0-9]/g, ''))}
-        placeholder="60"
-        keyboardType="number-pad"
-      />
+        <SectionLabel className="mt-sm">DURATION (MINUTES)</SectionLabel>
+        <TextField
+          className="mt-xs"
+          value={duration}
+          onChangeText={(text) => setDuration(text.replace(/[^0-9]/g, ''))}
+          placeholder="60"
+          keyboardType="number-pad"
+        />
+      </FormSection>
 
-      <NumericScaleField label="Intensity (1-10)" value={intensity} onChange={setIntensity} />
-      <NumericScaleField label="Energy before (optional)" value={energyBefore} onChange={setEnergyBefore} />
-      <NumericScaleField label="Energy after (optional)" value={energyAfter} onChange={setEnergyAfter} />
+      <FormSection className="mt-md">
+        <NumericScaleField label="Intensity (1-10)" value={intensity} onChange={setIntensity} />
+        <NumericScaleField
+          className="mt-sm"
+          label="Energy before (optional)"
+          value={energyBefore}
+          onChange={setEnergyBefore}
+        />
+        <NumericScaleField
+          className="mt-sm"
+          label="Energy after (optional)"
+          value={energyAfter}
+          onChange={setEnergyAfter}
+        />
+      </FormSection>
 
-      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>NOTES</Text>
-      <TextField
-        className="mt-xs"
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="How did the session go?"
-        multiline
-        numberOfLines={3}
-        style={{ minHeight: 80, textAlignVertical: 'top' }}
-      />
+      <FormSection className="mt-md">
+        <SectionLabel>NOTES</SectionLabel>
+        <TextField
+          className="mt-xs"
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="How did the session go?"
+          multiline
+          numberOfLines={3}
+          style={{ minHeight: 80, textAlignVertical: 'top' }}
+        />
+      </FormSection>
 
       <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
 

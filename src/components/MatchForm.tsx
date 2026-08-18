@@ -7,11 +7,17 @@ import { addDays, formatRelativeDate, toISODate } from '../lib/date';
 import { useTheme } from '../theme';
 import type { GoalProximity, MatchEntry, Sport } from '../types/models';
 import { Button } from './Button';
+import { FormSection } from './FormSection';
 import { GoalProximitySelector } from './GoalProximitySelector';
 import { TextField } from './TextField';
 
-const SECTION_LABEL_CLASSNAME = 'text-xs font-semibold tracking-wide text-text-muted';
-const CARD_CLASSNAME = 'mt-xl rounded-lg border border-border bg-background-elevated px-md py-md';
+function SectionLabel({ children, className = '' }: { children: string; className?: string }) {
+  return (
+    <Text className={`text-xs font-bold text-text-muted ${className}`} style={{ letterSpacing: 0.8 }}>
+      {children}
+    </Text>
+  );
+}
 
 interface MatchFormProps {
   userId: string;
@@ -86,51 +92,47 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
 
   return (
     <View className="mt-lg rounded-lg border border-border bg-background-surface px-md py-md">
-      <Text className={SECTION_LABEL_CLASSNAME}>DATE</Text>
-      <View className="mt-xs flex-row items-center gap-sm">
-        <Pressable
-          onPress={() => setDate((d) => addDays(d, -1))}
-          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 3,
-            elevation: 1,
-          }}
-        >
-          <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
-        </Pressable>
-        <Text className="flex-1 text-center text-lg font-bold text-text-primary">
-          {formatRelativeDate(toISODate(date))}
-        </Text>
-        <Pressable
-          onPress={() => setDate((d) => addDays(d, 1))}
-          className="h-11 w-11 items-center justify-center rounded-md bg-background-elevated active:opacity-70"
-          style={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 3,
-            elevation: 1,
-          }}
-        >
-          <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
-        </Pressable>
-      </View>
+      <FormSection>
+        <SectionLabel>DATE</SectionLabel>
+        <View className="mt-xs flex-row items-center gap-sm">
+          <Pressable
+            onPress={() => setDate((d) => addDays(d, -1))}
+            className="h-11 w-11 items-center justify-center rounded-md bg-background-surface active:opacity-70"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
+          </Pressable>
+          <Text className="flex-1 text-center text-lg font-bold text-text-primary">
+            {formatRelativeDate(toISODate(date))}
+          </Text>
+          <Pressable
+            onPress={() => setDate((d) => addDays(d, 1))}
+            className="h-11 w-11 items-center justify-center rounded-md bg-background-surface active:opacity-70"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <Ionicons name="chevron-forward" size={20} color={colors.text.primary} />
+          </Pressable>
+        </View>
 
-      <View className={CARD_CLASSNAME}>
-        <Text className={SECTION_LABEL_CLASSNAME}>MATCH INFO</Text>
-
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>OPPONENT</Text>
+        <SectionLabel className="mt-sm">OPPONENT</SectionLabel>
         <TextField className="mt-xs" value={opponent} onChangeText={setOpponent} placeholder="Opponent name" />
 
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>RESULT</Text>
+        <SectionLabel className="mt-sm">RESULT</SectionLabel>
         <TextField className="mt-xs" value={result} onChangeText={setResult} placeholder="2:1" />
 
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>
-          {sport === 'football' ? 'MINUTES PLAYED' : 'ICE TIME (MINUTES)'}
-        </Text>
+        <SectionLabel className="mt-sm">{sport === 'football' ? 'MINUTES PLAYED' : 'ICE TIME (MINUTES)'}</SectionLabel>
         <TextField
           className="mt-xs"
           value={playingTime}
@@ -138,12 +140,10 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
           placeholder={sport === 'football' ? '90' : '18'}
           keyboardType="number-pad"
         />
-      </View>
+      </FormSection>
 
-      <View className={CARD_CLASSNAME}>
-        <Text className={SECTION_LABEL_CLASSNAME}>PERFORMANCE</Text>
-
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>GOALS</Text>
+      <FormSection className="mt-md">
+        <SectionLabel>GOALS</SectionLabel>
         <TextField
           className="mt-xs"
           value={goals}
@@ -152,7 +152,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
           keyboardType="number-pad"
         />
 
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>ASSISTS</Text>
+        <SectionLabel className="mt-sm">ASSISTS</SectionLabel>
         <TextField
           className="mt-xs"
           value={assists}
@@ -161,7 +161,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
           keyboardType="number-pad"
         />
 
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>SHOTS</Text>
+        <SectionLabel className="mt-sm">SHOTS</SectionLabel>
         <TextField
           className="mt-xs"
           value={shots}
@@ -170,12 +170,14 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
           keyboardType="number-pad"
         />
 
-        <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>POSITION</Text>
+        <SectionLabel className="mt-sm">POSITION</SectionLabel>
         <TextField className="mt-xs" value={position} onChangeText={setPosition} placeholder="e.g. Midfielder" />
+      </FormSection>
 
+      <FormSection className="mt-md">
         {sport === 'football' ? (
           <>
-            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>YELLOW CARDS</Text>
+            <SectionLabel>YELLOW CARDS</SectionLabel>
             <TextField
               className="mt-xs"
               value={yellowCards}
@@ -184,7 +186,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
               keyboardType="number-pad"
             />
 
-            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>RED CARDS</Text>
+            <SectionLabel className="mt-sm">RED CARDS</SectionLabel>
             <TextField
               className="mt-xs"
               value={redCards}
@@ -195,7 +197,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
           </>
         ) : (
           <>
-            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>PENALTY MINUTES</Text>
+            <SectionLabel>PENALTY MINUTES</SectionLabel>
             <TextField
               className="mt-xs"
               value={penaltyMinutes}
@@ -204,7 +206,7 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
               keyboardType="number-pad"
             />
 
-            <Text className={`mt-md ${SECTION_LABEL_CLASSNAME}`}>PLUS / MINUS</Text>
+            <SectionLabel className="mt-sm">PLUS / MINUS</SectionLabel>
             <TextField
               className="mt-xs"
               value={plusMinus}
@@ -214,18 +216,20 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
             />
           </>
         )}
-      </View>
+      </FormSection>
 
-      <Text className={`mt-xl ${SECTION_LABEL_CLASSNAME}`}>NOTES</Text>
-      <TextField
-        className="mt-xs"
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="How did the match go?"
-        multiline
-        numberOfLines={3}
-        style={{ minHeight: 80, textAlignVertical: 'top' }}
-      />
+      <FormSection className="mt-md">
+        <SectionLabel>NOTES</SectionLabel>
+        <TextField
+          className="mt-xs"
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="How did the match go?"
+          multiline
+          numberOfLines={3}
+          style={{ minHeight: 80, textAlignVertical: 'top' }}
+        />
+      </FormSection>
 
       <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
 
