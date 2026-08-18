@@ -20,8 +20,8 @@ export default function LogScreen() {
   const sport = useProfileStore((s) => s.profile?.sport);
   const { entries: trainings, isLoading: isLoadingTrainings } = useTrainingData();
   const { entries: matches, isLoading: isLoadingMatches } = useMatchData();
-  const addTrainingEntry = useTrainingStore((s) => s.addEntry);
-  const addMatchEntry = useMatchStore((s) => s.addEntry);
+  const upsertTrainingEntry = useTrainingStore((s) => s.upsertEntry);
+  const upsertMatchEntry = useMatchStore((s) => s.upsertEntry);
 
   const [openForm, setOpenForm] = useState<OpenForm>(null);
 
@@ -67,7 +67,7 @@ export default function LogScreen() {
                 userId={userId}
                 sport={sport}
                 onSaved={(entry) => {
-                  addTrainingEntry(entry);
+                  upsertTrainingEntry(entry);
                   setOpenForm(null);
                 }}
               />
@@ -77,7 +77,7 @@ export default function LogScreen() {
                 userId={userId}
                 sport={sport}
                 onSaved={(entry) => {
-                  addMatchEntry(entry);
+                  upsertMatchEntry(entry);
                   setOpenForm(null);
                 }}
               />
@@ -106,7 +106,7 @@ function ActivityListItem({ entry }: { entry: ActivityEntry }) {
           <Text className="text-sm text-text-secondary">{formatRelativeDate(entry.date)}</Text>
         </View>
         <Text className="mt-xs text-sm text-text-secondary">
-          {entry.durationMinutes} min · Felt {entry.intensity}/5
+          {entry.durationMinutes} min · Intensity {entry.intensity}/10 · Goal {entry.goalProximity}%
         </Text>
         {entry.notes ? (
           <Text className="mt-xs text-sm text-text-secondary" numberOfLines={2}>
@@ -120,19 +120,17 @@ function ActivityListItem({ entry }: { entry: ActivityEntry }) {
   return (
     <View className="mt-sm rounded-lg border border-border bg-background-surface px-md py-md">
       <View className="flex-row items-center justify-between">
-        <Text className="text-base font-bold text-text-primary">
-          Match{entry.opponent ? ` vs ${entry.opponent}` : ''}
-        </Text>
+        <Text className="text-base font-bold text-text-primary">Match vs {entry.opponent}</Text>
         <Text className="text-sm text-text-secondary">{formatRelativeDate(entry.date)}</Text>
       </View>
       <Text className="mt-xs text-sm text-text-secondary">
         {[
-          entry.result ? entry.result.toUpperCase() : null,
-          entry.isHome === undefined ? null : entry.isHome ? 'Home' : 'Away',
-          entry.minutesPlayed ? `${entry.minutesPlayed} min` : null,
+          entry.result,
+          entry.sport === 'football' ? `${entry.minutesPlayed} min` : `${entry.iceTime} min ice time`,
+          `Goal ${entry.goalProximity}%`,
         ]
           .filter(Boolean)
-          .join(' · ') || 'No details logged'}
+          .join(' · ')}
       </Text>
       {entry.notes ? (
         <Text className="mt-xs text-sm text-text-secondary" numberOfLines={2}>

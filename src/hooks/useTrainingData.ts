@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchTrainings } from '../api/training';
+import { addTraining, deleteTraining, fetchTrainings, updateTraining } from '../api/training';
+import type { TrainingInput } from '../api/training';
 import { useTrainingStore } from '../store';
+import type { TrainingEntry } from '../types/models';
 import { useUserId } from './useUserId';
 
 export function useTrainingData() {
@@ -8,6 +10,8 @@ export function useTrainingData() {
   const entries = useTrainingStore((s) => s.entries);
   const isLoading = useTrainingStore((s) => s.isLoading);
   const setEntries = useTrainingStore((s) => s.setEntries);
+  const upsertEntry = useTrainingStore((s) => s.upsertEntry);
+  const removeEntryFromStore = useTrainingStore((s) => s.removeEntry);
   const setLoading = useTrainingStore((s) => s.setLoading);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,5 +32,38 @@ export function useTrainingData() {
     refetch();
   }, [refetch]);
 
-  return { entries, isLoading, error, refetch };
+  const create = useCallback(
+    async (params: TrainingInput): Promise<TrainingEntry> => {
+      if (!userId) throw new Error('Not authenticated');
+      const entry = await addTraining({ ...params, userId });
+      upsertEntry(entry);
+      return entry;
+    },
+    [userId, upsertEntry]
+  );
+
+  const update = useCallback(
+    async (id: string, params: Partial<TrainingInput>): Promise<TrainingEntry> => {
+      const entry = await updateTraining(id, params);
+      upsertEntry(entry);
+      return entry;
+    },
+    [upsertEntry]
+  );
+
+  const remove = useCallback(
+    async (id: string) => {
+      const previous = entries;
+      removeEntryFromStore(id);
+      try {
+        await deleteTraining(id);
+      } catch (e) {
+        setEntries(previous);
+        throw e;
+      }
+    },
+    [entries, removeEntryFromStore, setEntries]
+  );
+
+  return { entries, isLoading, error, refetch, create, update, remove };
 }

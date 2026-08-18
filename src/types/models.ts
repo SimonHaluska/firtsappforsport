@@ -29,29 +29,87 @@ export interface ScheduleEntry {
   notes?: string;
 }
 
-export interface TrainingEntry {
+export type TrainingTypeFootball =
+  | 'technika'
+  | 'strelba'
+  | 'kondicia'
+  | 'sila'
+  | 'taktika'
+  | 'regeneracia'
+  | 'individualny_trening'
+  | 'timovy_trening';
+
+export type TrainingTypeHockey =
+  | 'korculovanie'
+  | 'strelba'
+  | 'technika'
+  | 'sila'
+  | 'kondicia'
+  | 'regeneracia'
+  | 'individualny_trening'
+  | 'timovy_trening';
+
+// 5 discrete steps by design — never a continuous slider. See GoalProximitySelector.
+export type GoalProximity = 0 | 25 | 50 | 75 | 100;
+
+export interface GoalProximityPoint {
+  date: string; // ISO date, YYYY-MM-DD
+  value: GoalProximity;
+}
+
+interface TrainingEntryBase {
   id: string;
   date: string; // ISO date, YYYY-MM-DD
   type: 'training';
   durationMinutes: number;
-  intensity: 1 | 2 | 3 | 4 | 5;
-  mood: 1 | 2 | 3 | 4 | 5;
+  intensity: number; // 1-10
+  goalProximity: GoalProximity;
+  energyBefore?: number; // 1-10
+  energyAfter?: number; // 1-10
   notes?: string;
-  metrics?: Record<string, number>;
 }
 
-export interface MatchEntry {
+export interface FootballTrainingEntry extends TrainingEntryBase {
+  sport: 'football';
+  trainingType: TrainingTypeFootball;
+}
+
+export interface HockeyTrainingEntry extends TrainingEntryBase {
+  sport: 'hockey';
+  trainingType: TrainingTypeHockey;
+}
+
+export type TrainingEntry = FootballTrainingEntry | HockeyTrainingEntry;
+
+interface MatchEntryBase {
   id: string;
   date: string; // ISO date, YYYY-MM-DD
   type: 'match';
-  opponent?: string;
-  competition?: string;
-  result?: 'win' | 'loss' | 'draw';
-  isHome?: boolean;
-  minutesPlayed?: number;
+  opponent: string;
+  result: string; // e.g. "2:1"
+  goalProximity: GoalProximity;
+  goals?: number;
+  assists?: number;
+  shots?: number;
+  position?: string;
   notes?: string;
-  metrics?: Record<string, number>;
 }
+
+export interface FootballMatchEntry extends MatchEntryBase {
+  sport: 'football';
+  minutesPlayed: number;
+  yellowCards?: number;
+  redCards?: number;
+}
+
+export interface HockeyMatchEntry extends MatchEntryBase {
+  sport: 'hockey';
+  iceTime: number; // minutes
+  penaltyMinutes?: number;
+  plusMinus?: number;
+}
+
+export type MatchEntry = FootballMatchEntry | HockeyMatchEntry;
 
 export type ActivityEntry = TrainingEntry | MatchEntry;
 

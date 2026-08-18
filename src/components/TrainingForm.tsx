@@ -3,27 +3,13 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { addTraining } from '../api/training';
 import { addDays, formatRelativeDate, toISODate } from '../lib/date';
-import { TRAINING_METRIC_TEMPLATES } from '../lib/sportMetricTemplates';
+import { TRAINING_TYPE_OPTIONS } from '../lib/trainingTypes';
 import { useTheme } from '../theme';
-import type { Sport, TrainingEntry } from '../types/models';
+import type { GoalProximity, Sport, TrainingEntry, TrainingTypeFootball, TrainingTypeHockey } from '../types/models';
 import { Button } from './Button';
+import { GoalProximitySelector } from './GoalProximitySelector';
+import { NumericScaleField } from './NumericScaleField';
 import { TextField } from './TextField';
-
-const INTENSITY_OPTIONS: { value: 1 | 2 | 3 | 4 | 5; label: string }[] = [
-  { value: 1, label: 'Very Easy' },
-  { value: 2, label: 'Easy' },
-  { value: 3, label: 'Moderate' },
-  { value: 4, label: 'Hard' },
-  { value: 5, label: 'Very Hard' },
-];
-
-const MOOD_OPTIONS: { value: 1 | 2 | 3 | 4 | 5; emoji: string }[] = [
-  { value: 1, emoji: '😞' },
-  { value: 2, emoji: '🙁' },
-  { value: 3, emoji: '😐' },
-  { value: 4, emoji: '🙂' },
-  { value: 5, emoji: '😄' },
-];
 
 interface TrainingFormProps {
   userId: string;
@@ -34,33 +20,41 @@ interface TrainingFormProps {
 export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
   const { colors } = useTheme();
   const [date, setDate] = useState(() => new Date());
+  const [trainingType, setTrainingType] = useState<TrainingTypeFootball | TrainingTypeHockey | undefined>(
+    undefined
+  );
   const [duration, setDuration] = useState('');
-  const [intensity, setIntensity] = useState<1 | 2 | 3 | 4 | 5>(3);
-  const [mood, setMood] = useState<1 | 2 | 3 | 4 | 5>(3);
-  const [metrics, setMetrics] = useState<Record<string, string>>({});
+  const [intensity, setIntensity] = useState<number | undefined>(undefined);
+  const [energyBefore, setEnergyBefore] = useState<number | undefined>(undefined);
+  const [energyAfter, setEnergyAfter] = useState<number | undefined>(undefined);
+  const [goalProximity, setGoalProximity] = useState<GoalProximity | undefined>(undefined);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canSubmit = !!duration && Number(duration) > 0;
-  const metricFields = TRAINING_METRIC_TEMPLATES[sport];
+  const typeOptions = TRAINING_TYPE_OPTIONS[sport];
+
+  const canSubmit =
+    !!duration &&
+    Number(duration) > 0 &&
+    !!trainingType &&
+    intensity !== undefined &&
+    goalProximity !== undefined;
 
   const handleSubmit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !trainingType || intensity === undefined || goalProximity === undefined) return;
     setIsSubmitting(true);
     try {
-      const numericMetrics: Record<string, number> = {};
-      for (const field of metricFields) {
-        const raw = metrics[field.key];
-        if (raw) numericMetrics[field.key] = Number(raw);
-      }
       const entry = await addTraining({
         userId,
         date: toISODate(date),
+        sport,
+        trainingType,
         durationMinutes: Number(duration),
         intensity,
-        mood,
+        goalProximity,
+        energyBefore,
+        energyAfter,
         notes,
-        metrics: numericMetrics,
       });
       onSaved(entry);
     } catch (e) {
@@ -91,6 +85,26 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
         </Pressable>
       </View>
 
+      <Text className="mt-md text-sm font-semibold text-text-secondary">TRAINING TYPE</Text>
+      <View className="mt-xs flex-row flex-wrap gap-xs">
+        {typeOptions.map((option) => {
+          const selected = trainingType === option.value;
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => setTrainingType(option.value)}
+              className={`rounded-md border px-sm py-sm ${
+                selected ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
+              }`}
+            >
+              <Text className={`text-sm font-bold ${selected ? 'text-brand-primary' : 'text-text-primary'}`}>
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       <Text className="mt-md text-sm font-semibold text-text-secondary">DURATION (MINUTES)</Text>
       <TextField
         className="mt-xs"
@@ -100,59 +114,14 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
         keyboardType="number-pad"
       />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">HOW DID IT FEEL?</Text>
-      <View className="mt-xs flex-row gap-xs">
-        {INTENSITY_OPTIONS.map((option) => (
-          <Pressable
-            key={option.value}
-            onPress={() => setIntensity(option.value)}
-            className={`h-10 flex-1 items-center justify-center rounded-md border ${
-              intensity === option.value
-                ? 'border-brand-primary bg-background-elevated'
-                : 'border-border bg-background-surface'
-            }`}
-          >
-            <Text
-              className={`text-base font-bold ${
-                intensity === option.value ? 'text-brand-primary' : 'text-text-primary'
-              }`}
-            >
-              {option.value}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      <Text className="mt-xs text-center text-sm text-text-secondary">
-        {INTENSITY_OPTIONS.find((o) => o.value === intensity)?.label}
-      </Text>
+      <Text className="mt-md text-sm font-semibold text-text-secondary">INTENSITY (1-10)</Text>
+      <NumericScaleField value={intensity} onChange={setIntensity} />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">MOOD</Text>
-      <View className="mt-xs flex-row gap-xs">
-        {MOOD_OPTIONS.map((option) => (
-          <Pressable
-            key={option.value}
-            onPress={() => setMood(option.value)}
-            className={`h-11 flex-1 items-center justify-center rounded-md border ${
-              mood === option.value ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-            }`}
-          >
-            <Text className="text-lg">{option.emoji}</Text>
-          </Pressable>
-        ))}
-      </View>
+      <Text className="mt-md text-sm font-semibold text-text-secondary">ENERGY BEFORE (OPTIONAL)</Text>
+      <NumericScaleField value={energyBefore} onChange={setEnergyBefore} />
 
-      {metricFields.map((field) => (
-        <View key={field.key}>
-          <Text className="mt-md text-sm font-semibold text-text-secondary">{field.label.toUpperCase()}</Text>
-          <TextField
-            className="mt-xs"
-            value={metrics[field.key] ?? ''}
-            onChangeText={(text) => setMetrics((m) => ({ ...m, [field.key]: text.replace(/[^0-9]/g, '') }))}
-            placeholder="0"
-            keyboardType="number-pad"
-          />
-        </View>
-      ))}
+      <Text className="mt-md text-sm font-semibold text-text-secondary">ENERGY AFTER (OPTIONAL)</Text>
+      <NumericScaleField value={energyAfter} onChange={setEnergyAfter} />
 
       <Text className="mt-md text-sm font-semibold text-text-secondary">NOTES</Text>
       <TextField
@@ -164,6 +133,8 @@ export function TrainingForm({ userId, sport, onSaved }: TrainingFormProps) {
         numberOfLines={3}
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
+
+      <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
 
       <Button className="mt-md" label="Save Training" onPress={handleSubmit} disabled={!canSubmit} isLoading={isSubmitting} />
     </View>

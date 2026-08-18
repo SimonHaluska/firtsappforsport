@@ -2,18 +2,13 @@ import { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { addMatch } from '../api/match';
+import type { MatchInput } from '../api/match';
 import { addDays, formatRelativeDate, toISODate } from '../lib/date';
-import { MATCH_METRIC_TEMPLATES } from '../lib/sportMetricTemplates';
 import { useTheme } from '../theme';
-import type { MatchEntry, Sport } from '../types/models';
+import type { GoalProximity, MatchEntry, Sport } from '../types/models';
 import { Button } from './Button';
+import { GoalProximitySelector } from './GoalProximitySelector';
 import { TextField } from './TextField';
-
-const RESULT_OPTIONS: { value: 'win' | 'loss' | 'draw'; label: string }[] = [
-  { value: 'win', label: 'Win' },
-  { value: 'loss', label: 'Loss' },
-  { value: 'draw', label: 'Draw' },
-];
 
 interface MatchFormProps {
   userId: string;
@@ -25,35 +20,59 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
   const { colors } = useTheme();
   const [date, setDate] = useState(() => new Date());
   const [opponent, setOpponent] = useState('');
-  const [competition, setCompetition] = useState('');
-  const [result, setResult] = useState<'win' | 'loss' | 'draw' | undefined>(undefined);
-  const [isHome, setIsHome] = useState<boolean | undefined>(undefined);
-  const [minutesPlayed, setMinutesPlayed] = useState('');
-  const [metrics, setMetrics] = useState<Record<string, string>>({});
+  const [result, setResult] = useState('');
+  const [playingTime, setPlayingTime] = useState(''); // minutesPlayed (football) or iceTime (hockey)
+  const [goals, setGoals] = useState('');
+  const [assists, setAssists] = useState('');
+  const [shots, setShots] = useState('');
+  const [position, setPosition] = useState('');
+  const [yellowCards, setYellowCards] = useState('');
+  const [redCards, setRedCards] = useState('');
+  const [penaltyMinutes, setPenaltyMinutes] = useState('');
+  const [plusMinus, setPlusMinus] = useState('');
+  const [goalProximity, setGoalProximity] = useState<GoalProximity | undefined>(undefined);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const metricFields = MATCH_METRIC_TEMPLATES[sport];
+  const canSubmit =
+    !!opponent.trim() && !!result.trim() && !!playingTime && Number(playingTime) >= 0 && goalProximity !== undefined;
+
+  const toOptionalNumber = (text: string) => (text ? Number(text) : undefined);
 
   const handleSubmit = async () => {
+    if (!canSubmit || goalProximity === undefined) return;
     setIsSubmitting(true);
     try {
-      const numericMetrics: Record<string, number> = {};
-      for (const field of metricFields) {
-        const raw = metrics[field.key];
-        if (raw) numericMetrics[field.key] = Number(raw);
-      }
-      const entry = await addMatch({
-        userId,
+      const common = {
         date: toISODate(date),
         opponent,
-        competition,
         result,
-        isHome,
-        minutesPlayed: minutesPlayed ? Number(minutesPlayed) : undefined,
+        goalProximity,
+        goals: toOptionalNumber(goals),
+        assists: toOptionalNumber(assists),
+        shots: toOptionalNumber(shots),
+        position: position.trim() ? position : undefined,
         notes,
-        metrics: numericMetrics,
-      });
+      };
+
+      const input: MatchInput =
+        sport === 'football'
+          ? {
+              ...common,
+              sport: 'football',
+              minutesPlayed: Number(playingTime),
+              yellowCards: toOptionalNumber(yellowCards),
+              redCards: toOptionalNumber(redCards),
+            }
+          : {
+              ...common,
+              sport: 'hockey',
+              iceTime: Number(playingTime),
+              penaltyMinutes: toOptionalNumber(penaltyMinutes),
+              plusMinus: toOptionalNumber(plusMinus),
+            };
+
+      const entry = await addMatch({ ...input, userId });
       onSaved(entry);
     } catch (e) {
       Alert.alert('Could not save entry', e instanceof Error ? e.message : 'Please try again.');
@@ -86,75 +105,91 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
       <Text className="mt-md text-sm font-semibold text-text-secondary">OPPONENT</Text>
       <TextField className="mt-xs" value={opponent} onChangeText={setOpponent} placeholder="Opponent name" />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">COMPETITION</Text>
-      <TextField className="mt-xs" value={competition} onChangeText={setCompetition} placeholder="League, cup, friendly…" />
-
       <Text className="mt-md text-sm font-semibold text-text-secondary">RESULT</Text>
-      <View className="mt-xs flex-row gap-xs">
-        {RESULT_OPTIONS.map((option) => (
-          <Pressable
-            key={option.value}
-            onPress={() => setResult((r) => (r === option.value ? undefined : option.value))}
-            className={`h-10 flex-1 items-center justify-center rounded-md border ${
-              result === option.value ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-            }`}
-          >
-            <Text
-              className={`text-base font-bold ${
-                result === option.value ? 'text-brand-primary' : 'text-text-primary'
-              }`}
-            >
-              {option.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <TextField className="mt-xs" value={result} onChangeText={setResult} placeholder="2:1" />
 
-      <Text className="mt-md text-sm font-semibold text-text-secondary">HOME / AWAY</Text>
-      <View className="mt-xs flex-row gap-xs">
-        <Pressable
-          onPress={() => setIsHome((v) => (v === true ? undefined : true))}
-          className={`h-10 flex-1 items-center justify-center rounded-md border ${
-            isHome === true ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-          }`}
-        >
-          <Text className={`text-base font-bold ${isHome === true ? 'text-brand-primary' : 'text-text-primary'}`}>
-            Home
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setIsHome((v) => (v === false ? undefined : false))}
-          className={`h-10 flex-1 items-center justify-center rounded-md border ${
-            isHome === false ? 'border-brand-primary bg-background-elevated' : 'border-border bg-background-surface'
-          }`}
-        >
-          <Text className={`text-base font-bold ${isHome === false ? 'text-brand-primary' : 'text-text-primary'}`}>
-            Away
-          </Text>
-        </Pressable>
-      </View>
-
-      <Text className="mt-md text-sm font-semibold text-text-secondary">MINUTES PLAYED</Text>
+      <Text className="mt-md text-sm font-semibold text-text-secondary">
+        {sport === 'football' ? 'MINUTES PLAYED' : 'ICE TIME (MINUTES)'}
+      </Text>
       <TextField
         className="mt-xs"
-        value={minutesPlayed}
-        onChangeText={(text) => setMinutesPlayed(text.replace(/[^0-9]/g, ''))}
-        placeholder="90"
+        value={playingTime}
+        onChangeText={(text) => setPlayingTime(text.replace(/[^0-9]/g, ''))}
+        placeholder={sport === 'football' ? '90' : '18'}
         keyboardType="number-pad"
       />
 
-      {metricFields.map((field) => (
-        <View key={field.key}>
-          <Text className="mt-md text-sm font-semibold text-text-secondary">{field.label.toUpperCase()}</Text>
+      <Text className="mt-md text-sm font-semibold text-text-secondary">GOALS</Text>
+      <TextField
+        className="mt-xs"
+        value={goals}
+        onChangeText={(text) => setGoals(text.replace(/[^0-9]/g, ''))}
+        placeholder="0"
+        keyboardType="number-pad"
+      />
+
+      <Text className="mt-md text-sm font-semibold text-text-secondary">ASSISTS</Text>
+      <TextField
+        className="mt-xs"
+        value={assists}
+        onChangeText={(text) => setAssists(text.replace(/[^0-9]/g, ''))}
+        placeholder="0"
+        keyboardType="number-pad"
+      />
+
+      <Text className="mt-md text-sm font-semibold text-text-secondary">SHOTS</Text>
+      <TextField
+        className="mt-xs"
+        value={shots}
+        onChangeText={(text) => setShots(text.replace(/[^0-9]/g, ''))}
+        placeholder="0"
+        keyboardType="number-pad"
+      />
+
+      <Text className="mt-md text-sm font-semibold text-text-secondary">POSITION</Text>
+      <TextField className="mt-xs" value={position} onChangeText={setPosition} placeholder="e.g. Midfielder" />
+
+      {sport === 'football' ? (
+        <>
+          <Text className="mt-md text-sm font-semibold text-text-secondary">YELLOW CARDS</Text>
           <TextField
             className="mt-xs"
-            value={metrics[field.key] ?? ''}
-            onChangeText={(text) => setMetrics((m) => ({ ...m, [field.key]: text.replace(/[^0-9]/g, '') }))}
+            value={yellowCards}
+            onChangeText={(text) => setYellowCards(text.replace(/[^0-9]/g, ''))}
             placeholder="0"
             keyboardType="number-pad"
           />
-        </View>
-      ))}
+
+          <Text className="mt-md text-sm font-semibold text-text-secondary">RED CARDS</Text>
+          <TextField
+            className="mt-xs"
+            value={redCards}
+            onChangeText={(text) => setRedCards(text.replace(/[^0-9]/g, ''))}
+            placeholder="0"
+            keyboardType="number-pad"
+          />
+        </>
+      ) : (
+        <>
+          <Text className="mt-md text-sm font-semibold text-text-secondary">PENALTY MINUTES</Text>
+          <TextField
+            className="mt-xs"
+            value={penaltyMinutes}
+            onChangeText={(text) => setPenaltyMinutes(text.replace(/[^0-9]/g, ''))}
+            placeholder="0"
+            keyboardType="number-pad"
+          />
+
+          <Text className="mt-md text-sm font-semibold text-text-secondary">PLUS / MINUS</Text>
+          <TextField
+            className="mt-xs"
+            value={plusMinus}
+            onChangeText={(text) => setPlusMinus(text.replace(/[^-0-9]/g, ''))}
+            placeholder="0"
+            keyboardType="numbers-and-punctuation"
+          />
+        </>
+      )}
 
       <Text className="mt-md text-sm font-semibold text-text-secondary">NOTES</Text>
       <TextField
@@ -167,7 +202,15 @@ export function MatchForm({ userId, sport, onSaved }: MatchFormProps) {
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
 
-      <Button className="mt-md" label="Save Match" onPress={handleSubmit} isLoading={isSubmitting} />
+      <GoalProximitySelector value={goalProximity} onChange={setGoalProximity} />
+
+      <Button
+        className="mt-md"
+        label="Save Match"
+        onPress={handleSubmit}
+        disabled={!canSubmit}
+        isLoading={isSubmitting}
+      />
     </View>
   );
 }

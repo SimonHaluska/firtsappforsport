@@ -57,10 +57,8 @@ export default function HomeScreen() {
             </Text>
             <Text className="mt-xs text-sm text-text-secondary">
               {lastEntry.type === 'training'
-                ? `${lastEntry.durationMinutes} min · Felt ${lastEntry.intensity}/5`
-                : [lastEntry.opponent ? `vs ${lastEntry.opponent}` : null, lastEntry.result?.toUpperCase()]
-                    .filter(Boolean)
-                    .join(' · ') || 'No details logged'}
+                ? `${lastEntry.durationMinutes} min · Intensity ${lastEntry.intensity}/10`
+                : `vs ${lastEntry.opponent} · ${lastEntry.result}`}
             </Text>
             <Text className="mt-sm text-sm text-text-secondary">
               {sessionsThisWeek} session{sessionsThisWeek === 1 ? '' : 's'} logged this week
