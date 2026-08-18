@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { Text, View } from 'react-native';
+import { MomentumCard } from '../../components/MomentumCard';
 import { Screen } from '../../components/Screen';
 import { useMatchData } from '../../hooks/useMatchData';
+import { useMomentumData } from '../../hooks/useMomentumData';
 import { useScheduleData } from '../../hooks/useScheduleData';
 import { useTrainingData } from '../../hooks/useTrainingData';
 import { formatRelativeDate, isWithinLastDays, todayISODate } from '../../lib/date';
@@ -10,6 +12,7 @@ import { useProfileStore } from '../../store';
 
 export default function HomeScreen() {
   const profile = useProfileStore((s) => s.profile);
+  const { momentum } = useMomentumData();
   const { entries: scheduleEntries } = useScheduleData();
   const { entries: trainings } = useTrainingData();
   const { entries: matches } = useMatchData();
@@ -32,7 +35,9 @@ export default function HomeScreen() {
         {profile?.mentorName ? `${profile.mentorName} is ready when you are.` : 'Your mentor is ready when you are.'}
       </Text>
 
-      <View className="mt-xl rounded-lg border border-border bg-background-surface px-md py-md">
+      <MomentumCard momentum={momentum} />
+
+      <View className="mt-md rounded-lg border border-border bg-background-surface px-md py-md">
         <Text className="text-sm font-semibold text-text-secondary">TODAY</Text>
         <View className="mt-xs flex-row items-center gap-sm">
           <View

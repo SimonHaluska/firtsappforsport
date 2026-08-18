@@ -3,6 +3,7 @@ import { addMatch, deleteMatch, fetchMatches, updateMatch } from '../api/match';
 import type { MatchInput, MatchUpdateInput } from '../api/match';
 import { useMatchStore } from '../store';
 import type { MatchEntry } from '../types/models';
+import { refetchMomentum } from './useMomentumData';
 import { useUserId } from './useUserId';
 
 export function useMatchData() {
@@ -37,6 +38,10 @@ export function useMatchData() {
       if (!userId) throw new Error('Not authenticated');
       const entry = await addMatch({ ...params, userId });
       upsertEntry(entry);
+      // recalculate_user_momentum runs in the same DB transaction as the
+      // insert above, so the aggregate is already fresh — just re-pull it.
+      // Best-effort: a failed momentum refresh shouldn't fail the save.
+      refetchMomentum(userId).catch(() => {});
       return entry;
     },
     [userId, upsertEntry]
@@ -46,9 +51,10 @@ export function useMatchData() {
     async (id: string, params: MatchUpdateInput): Promise<MatchEntry> => {
       const entry = await updateMatch(id, params);
       upsertEntry(entry);
+      if (userId) refetchMomentum(userId).catch(() => {});
       return entry;
     },
-    [upsertEntry]
+    [userId, upsertEntry]
   );
 
   const remove = useCallback(
@@ -57,12 +63,13 @@ export function useMatchData() {
       removeEntryFromStore(id);
       try {
         await deleteMatch(id);
+        if (userId) refetchMomentum(userId).catch(() => {});
       } catch (e) {
         setEntries(previous);
         throw e;
       }
     },
-    [entries, removeEntryFromStore, setEntries]
+    [userId, entries, removeEntryFromStore, setEntries]
   );
 
   return { entries, isLoading, error, refetch, create, update, remove };

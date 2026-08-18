@@ -126,6 +126,17 @@ export interface WeeklyProgress {
   percent: number; // 0-1, clamped
 }
 
+export type MomentumStatus = 'rising' | 'stable' | 'declining';
+
+export interface UserMomentum {
+  currentStreakWeeks: number;
+  longestStreakWeeks: number;
+  momentumStatus: MomentumStatus | null; // null = not enough history yet
+  currentWeekSessionCount: number;
+  currentWeekIsActive: boolean;
+  lastCalculatedAt: string;
+}
+
 export type ChatRole = 'user' | 'mentor';
 
 export interface ChatMessage {

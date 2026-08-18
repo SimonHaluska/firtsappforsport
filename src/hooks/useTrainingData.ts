@@ -3,6 +3,7 @@ import { addTraining, deleteTraining, fetchTrainings, updateTraining } from '../
 import type { TrainingInput } from '../api/training';
 import { useTrainingStore } from '../store';
 import type { TrainingEntry } from '../types/models';
+import { refetchMomentum } from './useMomentumData';
 import { useUserId } from './useUserId';
 
 export function useTrainingData() {
@@ -37,6 +38,10 @@ export function useTrainingData() {
       if (!userId) throw new Error('Not authenticated');
       const entry = await addTraining({ ...params, userId });
       upsertEntry(entry);
+      // recalculate_user_momentum runs in the same DB transaction as the
+      // insert above, so the aggregate is already fresh — just re-pull it.
+      // Best-effort: a failed momentum refresh shouldn't fail the save.
+      refetchMomentum(userId).catch(() => {});
       return entry;
     },
     [userId, upsertEntry]
@@ -46,9 +51,10 @@ export function useTrainingData() {
     async (id: string, params: Partial<TrainingInput>): Promise<TrainingEntry> => {
       const entry = await updateTraining(id, params);
       upsertEntry(entry);
+      if (userId) refetchMomentum(userId).catch(() => {});
       return entry;
     },
-    [upsertEntry]
+    [userId, upsertEntry]
   );
 
   const remove = useCallback(
@@ -57,12 +63,13 @@ export function useTrainingData() {
       removeEntryFromStore(id);
       try {
         await deleteTraining(id);
+        if (userId) refetchMomentum(userId).catch(() => {});
       } catch (e) {
         setEntries(previous);
         throw e;
       }
     },
-    [entries, removeEntryFromStore, setEntries]
+    [userId, entries, removeEntryFromStore, setEntries]
   );
 
   return { entries, isLoading, error, refetch, create, update, remove };

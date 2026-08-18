@@ -165,6 +165,35 @@ export interface Database {
           },
         ];
       };
+      user_momentum: {
+        Row: {
+          user_id: string;
+          current_streak_weeks: number;
+          longest_streak_weeks: number;
+          momentum_status: 'rising' | 'stable' | 'declining' | null;
+          current_week_session_count: number;
+          current_week_is_active: boolean;
+          last_calculated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          current_streak_weeks?: number;
+          longest_streak_weeks?: number;
+          momentum_status?: 'rising' | 'stable' | 'declining' | null;
+          current_week_session_count?: number;
+          current_week_is_active?: boolean;
+          last_calculated_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['user_momentum']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: 'user_momentum_user_id_fkey';
+            columns: ['user_id'];
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       chat_messages: {
         Row: {
           id: string;
